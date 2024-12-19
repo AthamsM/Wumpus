@@ -1,0 +1,203 @@
+import random
+
+# Criar uma matriz 4x4 preenchida com o valor 0
+matriz = [[0 for j in range(4)] for i in range(4)]
+
+# Alterar um elemento específico da matriz
+posicao_inicial = [0, 0]
+posicao_agente = [0, 0]
+posicao_wumpus = [2, 1]
+posicao_buraco = [1, 3]
+posicao_ouro = [2, 2]
+posicao_segura = [(posicao_agente[0], posicao_agente[0])]
+posicao_perigo = []
+posicao_proibida = []
+
+
+# Em caso que o agente caia no buraco ou seja devorado
+# pelo wumpus, a funcao a abaixo retorna falso
+def condicao_vida():
+  return False
+
+
+# Função para exibir a matriz
+def exibir_matriz():
+  for linha in matriz:
+    print(linha)
+
+
+#========================================================
+# Função para mover o agente
+def mover_agente(direcao):
+  global posicao_agente, posicao_segura, posicao_proibida
+  if direcao == "cima" and posicao_agente[0] > 0:
+    if (posicao_agente[0] - 1, posicao_agente[1]) in (posicao_proibida):
+      print("Você não pode ir para essa posição")
+      posicao_segura.append((posicao_agente[0], posicao_agente[1]))
+    else:
+      posicao_agente[0] -= 1
+  elif direcao == "baixo" and posicao_agente[0] < 3:
+    if (posicao_agente[0] + 1, posicao_agente[1]) in posicao_proibida:
+      print("Você não pode ir para essa posição")
+      posicao_segura.append((posicao_agente[0], posicao_agente[1]))
+    else:
+      posicao_agente[0] += 1
+  elif direcao == "esquerda" and posicao_agente[1] > 0:
+    if (posicao_agente[0], posicao_agente[1] - 1) in posicao_proibida:
+      print("Você não pode ir para essa posição")
+      posicao_segura.append((posicao_agente[0], posicao_agente[1]))
+    else:
+      posicao_agente[1] -= 1
+  elif direcao == "direita" and posicao_agente[1] < 3:
+    if (posicao_agente[0], posicao_agente[1] + 1) in (posicao_proibida):
+      print("Você não pode ir para essa posição")
+      posicao_segura.append((posicao_agente[0], posicao_agente[1]))
+    else:
+      posicao_agente[1] += 1
+
+
+#========================================================
+def mover_agente_ouro(direcao):
+  global posicao_agente, posicao_segura, posicao_proibida
+  if direcao == "cima" and posicao_agente[0] > 0:
+    if (posicao_agente[0] - 1, posicao_agente[1]) in (posicao_segura):
+      posicao_agente[0] -= 1
+    else:
+      print("Você não pode ir para essa posição")
+  elif direcao == "baixo" and posicao_agente[0] < 3:
+    if (posicao_agente[0] + 1, posicao_agente[1]) in posicao_segura:
+      posicao_agente[0] += 1
+    else:
+      print("Você não pode ir para essa posição")
+  elif direcao == "esquerda" and posicao_agente[1] > 0:
+    if (posicao_agente[0], posicao_agente[1] - 1) in posicao_segura:
+      posicao_agente[1] -= 1
+    else:
+      print("Você não pode ir para essa posição")
+  elif direcao == "direita" and posicao_agente[1] < 3:
+    if (posicao_agente[0], posicao_agente[1] + 1) in (posicao_segura):
+      posicao_agente[1] += 1
+    else:
+      print("Você não pode ir para essa posição")
+
+
+#========================================================
+# Função para verificar se o agente encontrou ouro, wumpus ou buraco
+def verificar_situacao():
+  global ouro
+  if posicao_agente == posicao_ouro:
+    print("Você encontrou o ouro!")
+    ouro = True
+    return True
+  elif posicao_agente == posicao_wumpus:
+    print("Você foi devorado pelo Wumpus!")
+    return False
+  elif posicao_agente == posicao_buraco:
+    print("Você caiu em um buraco!")
+    return False
+  elif tuple(posicao_agente) in [(posicao_ouro[0] - 1, posicao_ouro[1]),
+                                 (posicao_ouro[0] + 1, posicao_ouro[1]),
+                                 (posicao_ouro[0], posicao_ouro[1] - 1),
+                                 (posicao_ouro[0], posicao_ouro[1] + 1)]:
+    if tuple(posicao_agente) in [(posicao_buraco[0] - 1, posicao_buraco[1]),
+                                 (posicao_buraco[0] + 1, posicao_buraco[1]),
+                                 (posicao_buraco[0], posicao_buraco[1] - 1),
+                                 (posicao_buraco[0], posicao_buraco[1] + 1),
+                                 (posicao_wumpus[0] - 1, posicao_wumpus[1]),
+                                 (posicao_wumpus[0] + 1, posicao_wumpus[1]),
+                                 (posicao_wumpus[0], posicao_wumpus[1] - 1),
+                                 (posicao_wumpus[0], posicao_wumpus[1] + 1)]:
+      if (posicao_agente[0], posicao_agente[1]) in\
+         (posicao_perigo or posicao_segura):
+        print("to perto, mas cuidado...")
+        return True
+      else:
+        posicao_perigo.append((posicao_agente[0], posicao_agente[1]))
+        posicao_segura.append((posicao_agente[0], posicao_agente[1]))
+        print("hummmm tem um ourinho perto, mas cuiado...")
+        return True
+    posicao_segura.append((posicao_agente[0], posicao_agente[1]))
+    print("hummmm tem um ourinho perto")
+    return True
+  #indentifica caso tenha um perigo
+  elif tuple(posicao_agente) in [(posicao_buraco[0] - 1, posicao_buraco[1]),
+                                 (posicao_buraco[0] + 1, posicao_buraco[1]),
+                                 (posicao_buraco[0], posicao_buraco[1] - 1),
+                                 (posicao_buraco[0], posicao_buraco[1] + 1),
+                                 (posicao_wumpus[0] - 1, posicao_wumpus[1]),
+                                 (posicao_wumpus[0] + 1, posicao_wumpus[1]),
+                                 (posicao_wumpus[0], posicao_wumpus[1] - 1),
+                                 (posicao_wumpus[0], posicao_wumpus[1] + 1)]:
+    if (posicao_agente[0], posicao_agente[1]) in posicao_perigo:
+      print("denovo aqui??? cuidado...")
+      return True
+    else:
+      print("ixi, que sensação estranha... tem um perigo perto")
+      posicao_perigo.append((posicao_agente[0], posicao_agente[1]))
+      return True
+  else:
+    if (posicao_agente[0], posicao_agente[1]) in posicao_segura:
+      print("Sim está seguro!")
+      return True
+    else:
+      posicao_segura.append((posicao_agente[0], posicao_agente[1]))
+      print("Você está seguro!")
+    return True
+
+
+#========================================================
+
+
+def verificar_perigo():
+  #ordena nossa lista de perigo
+  ordena_posicao_perigo = sorted(posicao_perigo, key=lambda x: x[1])
+  for i in range(len(ordena_posicao_perigo)):
+    for j in range(i + 1, len(posicao_perigo)):
+      par1 = ordena_posicao_perigo[i]
+      par2 = ordena_posicao_perigo[j]
+      if sum(par1) == sum(par2):
+        copia_par1 = par1
+        copia_par2 = par2
+        if (copia_par1[0], copia_par2[0]) in posicao_proibida:
+          return
+        else:
+          posicao_proibida.append((copia_par1[0], copia_par2[1]))
+
+
+# Simulação de movimento do agente
+ouro = False
+vida = True
+while vida:
+  if vida:
+    if ouro:
+      movimento = random.choice(["cima", "baixo", "esquerda", "direita"])
+      print("Movimento:", movimento)
+      mover_agente_ouro(movimento)
+      vida = verificar_situacao()
+      verificar_perigo()
+      print("sua Vida: ", vida)
+      matriz = [[0 for j in range(4)] for i in range(4)]
+      matriz[posicao_agente[0]][posicao_agente[1]] = 1
+      matriz[posicao_ouro[0]][posicao_ouro[1]] = 2
+      matriz[posicao_wumpus[0]][posicao_wumpus[1]] = 3
+      matriz[posicao_buraco[0]][posicao_buraco[1]] = 4
+      exibir_matriz()
+      if posicao_agente == posicao_inicial:
+        print("Você voltou para a posição inicial com o ouro! ")
+        exit()
+    else:
+      movimento = random.choice(["cima", "baixo", "esquerda", "direita"])
+      print("Movimento:", movimento)
+      mover_agente(movimento)
+      vida = verificar_situacao()
+      verificar_perigo()
+      print("sua Vida: ", vida)
+      matriz = [[0 for j in range(4)] for i in range(4)]
+      matriz[posicao_agente[0]][posicao_agente[1]] = 1
+      matriz[posicao_ouro[0]][posicao_ouro[1]] = 2
+      matriz[posicao_wumpus[0]][posicao_wumpus[1]] = 3
+      matriz[posicao_buraco[0]][posicao_buraco[1]] = 4
+      exibir_matriz()
+    print()
+  else:
+    break
