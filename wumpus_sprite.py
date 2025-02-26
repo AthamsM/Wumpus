@@ -1,9 +1,38 @@
+# Segunda versao (mais fofa)
+# E so Deus continua entendendo esse codigo :)
+
+import pygame
 import random
 
-# Criar uma matriz 4x4 preenchida com o valor 0
-matriz = [[0 for j in range(4)] for i in range(4)]
+# Configurações do jogo
+LARGURA, ALTURA = 600, 600  # Tamanho da janela
+tamanho_celula = LARGURA // 4
 
-# Alterar um elemento específico da matriz
+# Inicializa o pygame
+pygame.init()
+tela = pygame.display.set_mode((LARGURA, ALTURA))
+pygame.display.set_caption("Mundo de Wumpus")
+
+# Cores
+BRANCO = (255, 255, 255)
+PRETO = (0, 0, 0)
+
+# Carregar imagens
+fundo_img = pygame.image.load("sprites/sprite_0.png")  # Carregar imagem de fundo
+fundo_img = pygame.transform.scale(fundo_img, (LARGURA, ALTURA))
+
+agente_img = pygame.image.load("sprites/sprite_3.png")
+wumpus_img = pygame.image.load("sprites/sprite_1.png")
+tesouro_img = pygame.image.load("sprites/sprite_2.png")
+buraco_img = pygame.image.load("sprites/sprite_4.png")
+
+# Redimensionar sprites
+agente_img = pygame.transform.scale(agente_img, (tamanho_celula, tamanho_celula))
+wumpus_img = pygame.transform.scale(wumpus_img, (tamanho_celula, tamanho_celula))
+tesouro_img = pygame.transform.scale(tesouro_img, (tamanho_celula, tamanho_celula))
+buraco_img = pygame.transform.scale(buraco_img, (tamanho_celula, tamanho_celula))
+
+# Posicionamento inicial
 posicao_inicial = [0, 0]
 posicao_agente = [0, 0]
 posicao_wumpus = [2, 1]
@@ -13,27 +42,23 @@ posicao_segura = [(posicao_agente[0], posicao_agente[0])]
 posicao_perigo = []
 posicao_proibida = []
 
-
-# Em caso que o agente caia no buraco ou seja devorado
-# pelo wumpus, a funcao a abaixo retorna falso
-def condicao_vida():
-  return False
-
-
-# Função para exibir a matriz
-def exibir_matriz():
-  for linha in matriz:
-    print(linha)
+def desenhar_tabuleiro():
+    tela.blit(fundo_img, (0, 0))  # Desenha a imagem de fundo
+    for i in range(4):
+        for j in range(4):
+            pygame.draw.rect(tela, PRETO, (j * tamanho_celula, i * tamanho_celula, tamanho_celula, tamanho_celula), 1)
+    tela.blit(wumpus_img, (posicao_wumpus[1] * tamanho_celula, posicao_wumpus[0] * tamanho_celula))
+    tela.blit(buraco_img, (posicao_buraco[1] * tamanho_celula, posicao_buraco[0] * tamanho_celula))
+    tela.blit(tesouro_img, (posicao_ouro[1] * tamanho_celula, posicao_ouro[0] * tamanho_celula))
+    tela.blit(agente_img, (posicao_agente[1] * tamanho_celula, posicao_agente[0] * tamanho_celula))
 
 
-#========================================================
-# Função para mover o agente
 def mover_agente(direcao):
   global posicao_agente, posicao_segura, posicao_proibida
   if direcao == "cima" and posicao_agente[0] > 0:
     if (posicao_agente[0] - 1, posicao_agente[1]) in (posicao_proibida):
       print("Você não pode ir para essa posição")
-      posicao_segura.append((posicao_agente[0], posicao_agente[1]))
+      posicao_segura.append((posicao_agente[0], posicao_agente[1]))    
     else:
       posicao_agente[0] -= 1
   elif direcao == "baixo" and posicao_agente[0] < 3:
@@ -55,8 +80,6 @@ def mover_agente(direcao):
     else:
       posicao_agente[1] += 1
 
-
-#========================================================
 def mover_agente_ouro(direcao):
   global posicao_agente, posicao_segura, posicao_proibida
   if direcao == "cima" and posicao_agente[0] > 0:
@@ -79,8 +102,7 @@ def mover_agente_ouro(direcao):
       posicao_agente[1] += 1
     else:
       print("Você não pode ir para essa posição")
-
-
+ 
 #========================================================
 # Função para verificar se o agente encontrou ouro, wumpus ou buraco
 def verificar_situacao():
@@ -145,8 +167,7 @@ def verificar_situacao():
     return True
 
 
-#========================================================
-
+#========================================================  
 
 def verificar_perigo():
   #ordena nossa lista de perigo
@@ -162,42 +183,37 @@ def verificar_perigo():
           return
         else:
           posicao_proibida.append((copia_par1[0], copia_par2[1]))
-
-
-# Simulação de movimento do agente
+   
+      
+# Loop do jogo
 ouro = False
 vida = True
-while vida:
-  if vida:
-    if ouro:
-      movimento = random.choice(["cima", "baixo", "esquerda", "direita"])
-      print("Movimento:", movimento)
-      mover_agente_ouro(movimento)
-      vida = verificar_situacao()
-      verificar_perigo()
-      print("sua Vida: ", vida)
-      matriz = [[0 for j in range(4)] for i in range(4)]
-      matriz[posicao_agente[0]][posicao_agente[1]] = 1
-      matriz[posicao_ouro[0]][posicao_ouro[1]] = 2
-      matriz[posicao_wumpus[0]][posicao_wumpus[1]] = 3
-      matriz[posicao_buraco[0]][posicao_buraco[1]] = 4
-      exibir_matriz()
-      if posicao_agente == posicao_inicial:
-        print("Você voltou para a posição inicial com o ouro! ")
-        exit()
+rodando = True
+clock = pygame.time.Clock()
+while rodando:
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            rodando = False
+    if vida:
+        if ouro:
+            clock.tick(1)
+            movimento = random.choice(["cima", "baixo", "esquerda", "direita"])
+            mover_agente_ouro(movimento)
+            vida = verificar_situacao()
+            verificar_perigo()
+            desenhar_tabuleiro()
+            pygame.display.flip()
+            if posicao_agente == posicao_inicial:
+                pygame.quit()
+        else:
+            clock.tick(1)
+            movimento = random.choice(["cima", "baixo", "esquerda", "direita"])
+            mover_agente(movimento)
+            vida = verificar_situacao()
+            verificar_perigo()
+            desenhar_tabuleiro()
+            pygame.display.flip()
     else:
-      movimento = random.choice(["cima", "baixo", "esquerda", "direita"])
-      print("Movimento:", movimento)
-      mover_agente(movimento)
-      vida = verificar_situacao()
-      verificar_perigo()
-      print("sua Vida: ", vida)
-      matriz = [[0 for j in range(4)] for i in range(4)]
-      matriz[posicao_agente[0]][posicao_agente[1]] = 1
-      matriz[posicao_ouro[0]][posicao_ouro[1]] = 2
-      matriz[posicao_wumpus[0]][posicao_wumpus[1]] = 3
-      matriz[posicao_buraco[0]][posicao_buraco[1]] = 4
-      exibir_matriz()
-    print()
-  else:
-    break
+        break
+
+pygame.quit()
