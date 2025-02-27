@@ -20,17 +20,23 @@ PRETO = (0, 0, 0)
 # Carregar imagens
 fundo_img = pygame.image.load("sprites/sprite_0.png")  # Carregar imagem de fundo
 fundo_img = pygame.transform.scale(fundo_img, (LARGURA, ALTURA))
+win_img = pygame.image.load("sprites/sprite_5.png")  # Carregar imagem de fundo
+win_img = pygame.transform.scale(win_img, (LARGURA, ALTURA))
+lose_img = pygame.image.load("sprites/sprite_6.png")  # Carregar imagem de fundo
+lose_img = pygame.transform.scale(lose_img, (LARGURA, ALTURA))
 
 agente_img = pygame.image.load("sprites/sprite_3.png")
 wumpus_img = pygame.image.load("sprites/sprite_1.png")
 tesouro_img = pygame.image.load("sprites/sprite_2.png")
 buraco_img = pygame.image.load("sprites/sprite_4.png")
+ouro_img = pygame.image.load("sprites/sprite_7.png")
 
 # Redimensionar sprites
 agente_img = pygame.transform.scale(agente_img, (tamanho_celula, tamanho_celula))
 wumpus_img = pygame.transform.scale(wumpus_img, (tamanho_celula, tamanho_celula))
 tesouro_img = pygame.transform.scale(tesouro_img, (tamanho_celula, tamanho_celula))
 buraco_img = pygame.transform.scale(buraco_img, (tamanho_celula, tamanho_celula))
+ouro_img = pygame.transform.scale(ouro_img, (tamanho_celula, tamanho_celula))
 
 # Posicionamento inicial
 posicao_inicial = [0, 0]
@@ -42,7 +48,12 @@ posicao_segura = [(posicao_agente[0], posicao_agente[0])]
 posicao_perigo = []
 posicao_proibida = []
 
-def desenhar_tabuleiro():
+def desenhar_tabuleiro(situacao):
+  if situacao == "ganhou":
+    tela.blit(win_img, (0, 0))  # Desenha a imagem de fundo
+  elif situacao == "perdeu":
+    tela.blit(lose_img,(0,0))
+  else:
     tela.blit(fundo_img, (0, 0))  # Desenha a imagem de fundo
     for i in range(4):
         for j in range(4):
@@ -201,19 +212,27 @@ while rodando:
             mover_agente_ouro(movimento)
             vida = verificar_situacao()
             verificar_perigo()
-            desenhar_tabuleiro()
+            desenhar_tabuleiro("")
             pygame.display.flip()
             if posicao_agente == posicao_inicial:
-                pygame.quit()
+                for evento in pygame.event.get():
+                  if evento.type == pygame.QUIT:
+                    rodando = False
+                desenhar_tabuleiro("ganhou")
+                pygame.display.flip()
         else:
             clock.tick(1)
             movimento = random.choice(["cima", "baixo", "esquerda", "direita"])
             mover_agente(movimento)
             vida = verificar_situacao()
             verificar_perigo()
-            desenhar_tabuleiro()
+            desenhar_tabuleiro("")
             pygame.display.flip()
     else:
-        break
+        for evento in pygame.event.get():
+          if evento.type == pygame.QUIT:
+              rodando = False
+        desenhar_tabuleiro("perdeu")
+        pygame.display.flip()
 
 pygame.quit()
